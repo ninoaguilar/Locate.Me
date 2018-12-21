@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  companyservice:
+    image: ${DOCKER_REGISTRY-}companyservice
+    build:
+      context: .
+      dockerfile: CompanyService/Dockerfile
+
+  companyservice.test:
+    image: ${DOCKER_REGISTRY-}companyservice
+    build:
+      context: .
+      dockerfile: CompanyService.Test/Dockerfile
+
