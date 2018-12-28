@@ -22,35 +22,37 @@ namespace CompanyService.Controllers
 
         // GET: api/company
         [HttpGet]
-        public async virtual Task<IActionResult> GetAllCompanies()
+        public virtual IActionResult GetAllCompanies()
         {
-            return this.Ok(_repository.GetCompanies());
+            return this.Ok(_repository.ListAll());
         }
 
-        // GET api/values/5
+        // GET api/company/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public virtual IActionResult GetCompany(Guid id)
         {
-            return "value";
+            throw new NotImplementedException();
         }
 
         // POST api/company
         [HttpPost]
-        public void Post([FromBody]string value)
+        public virtual IActionResult CreateCompany([FromBody]Company company)
         {
-
+            throw new NotImplementedException();
         }
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public virtual IActionResult UpdateCompany([FromBody]Company company, Guid id)
         {
+            throw new NotImplementedException();
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public virtual IActionResult DeleteCompany(Guid id)
         {
+            throw new NotImplementedException();
         }
     }
 }

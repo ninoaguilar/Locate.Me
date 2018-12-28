@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CompanyService.Models;
 
 namespace CompanyService.Persistence
@@ -26,14 +27,49 @@ namespace CompanyService.Persistence
         #endregion
 
 
-        public void AddCompanies(Company company)
-        {
-            _companies.Add(company);
-        }
-
-        public IEnumerable<Company> GetCompanies()
+        #region Methods
+        public IEnumerable<Company> ListAll()
         {
             return _companies;
         }
+
+        public Company Add(Company company)
+        {
+            _companies.Add(company);
+            return company;
+        }
+
+        public Company Get(Guid id)
+        {
+            return _companies.FirstOrDefault(t => t.Id == id);
+        }
+
+        public Company Delete(Guid id)
+        {
+            var q = _companies.Where(t => t.Id == id);
+            Company company = null;
+
+            if (q.Any())
+            {
+                company = q.First();
+                _companies.Remove(company);
+            }
+
+            return company;
+        }
+
+        public Company Update(Company company)
+        {
+            Company updatedCompany = this.Delete(company.Id);
+
+            if(updatedCompany != null)
+            {
+                updatedCompany = this.Add(company);
+            }
+
+            return updatedCompany;
+        }
+        #endregion
+
     }
 }

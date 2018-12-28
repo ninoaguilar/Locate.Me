@@ -6,7 +6,10 @@ namespace CompanyService.Persistence
 {
     public interface ICompanyRepository
     {
-        IEnumerable<Company> GetCompanies();
-        void AddCompanies(Company company);
+        IEnumerable<Company> ListAll();
+        Company Get(Guid id);
+        Company Add(Company company);
+        Company Update(Company company);
+        Company Delete(Guid id);
     }
 }
