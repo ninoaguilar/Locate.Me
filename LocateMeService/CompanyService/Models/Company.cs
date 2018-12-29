@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyService.Models
 {
@@ -32,6 +33,11 @@ namespace CompanyService.Models
         public override string ToString()
         {
             return this.Name;
+        }
+
+        public static explicit operator Company(ObjectResult v)
+        {
+            throw new NotImplementedException();
         }
         #endregion
 

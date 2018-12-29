@@ -24,35 +24,62 @@ namespace CompanyService.Controllers
         [HttpGet]
         public virtual IActionResult GetAllCompanies()
         {
-            return this.Ok(_repository.ListAll());
+            return Ok(_repository.ListAll());
         }
 
         // GET api/company/5
         [HttpGet("{id}")]
         public virtual IActionResult GetCompany(Guid id)
         {
-            throw new NotImplementedException();
+            var company = _repository.Get(id);
+
+            if (company is null) 
+            {
+                return NotFound();
+            }
+
+            return Ok(company);
         }
 
         // POST api/company
         [HttpPost]
-        public virtual IActionResult CreateCompany([FromBody]Company company)
+        public virtual IActionResult CreateCompany([FromBody]Company c)
         {
-            throw new NotImplementedException();
+            var company = _repository.Add(c);
+            return Created($"/company/{c.Id}", c);
         }
 
         // PUT api/values/5
         [HttpPut("{id}")]
         public virtual IActionResult UpdateCompany([FromBody]Company company, Guid id)
         {
-            throw new NotImplementedException();
+            var updatedCompany = _repository.Get(id);
+
+            if (updatedCompany is null)
+            {
+                return NotFound();
+            }
+
+            _repository.Delete(id);
+            _repository.Add(company);
+
+            return Ok(company);
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public virtual IActionResult DeleteCompany(Guid id)
         {
-            throw new NotImplementedException();
+            var updatedCompany = _repository.Get(id);
+
+            if (updatedCompany is null)
+            {
+                return NotFound();
+            }
+
+            _repository.Delete(id);
+
+            return Ok(updatedCompany);
         }
     }
 }

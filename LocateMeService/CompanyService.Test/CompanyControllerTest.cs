@@ -15,11 +15,12 @@ namespace CompanyService.Test
         {
             CompanyController controller = new CompanyController(new TestMemoryRepository());
 
-            var rawCompanies = (IEnumerable<Company>)controller.GetAllCompanies();
+            var actionResultGetAll = controller.GetAllCompanies() as ObjectResult;
+            var rawCompanies = (IEnumerable<Company>)actionResultGetAll.Value;
             List<Company> companies = new List<Company>(rawCompanies);
             Assert.Equal(2, companies.Count);
-            Assert.Equal("Sample Company One", companies[0].Name);
-            Assert.Equal("Sample Company Two", companies[1].Name);
+            Assert.Equal("Test Company One", companies[0].Name);
+            Assert.Equal("Test Company Two", companies[1].Name);
         }
 
         [Fact]
@@ -32,7 +33,8 @@ namespace CompanyService.Test
             Company testCompany = new Company(testName, id);
 
             controller.CreateCompany(testCompany);
-            Company result = (Company)controller.GetCompany(testCompany.Id);
+            var actionResultGetCompany = controller.GetCompany(testCompany.Id) as ObjectResult;
+            Company result = (Company)actionResultGetCompany.Value;
 
             Assert.Equal(result, testCompany);
         }
