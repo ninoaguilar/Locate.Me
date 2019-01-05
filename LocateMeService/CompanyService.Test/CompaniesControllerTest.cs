@@ -13,9 +13,9 @@ namespace CompanyService.Test
         [Fact]
         public void QueryCompanyListReturnsCorrectCompanies()
         {
-            CompanyController controller = new CompanyController(new TestMemoryRepository());
+            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
 
-            var actionResultGetAll = controller.GetAllCompanies() as ObjectResult;
+            var actionResultGetAll = controller.GetAllEmployees() as ObjectResult;
             var rawCompanies = (IEnumerable<Company>)actionResultGetAll.Value;
             List<Company> companies = new List<Company>(rawCompanies);
             Assert.Equal(2, companies.Count);
@@ -26,7 +26,7 @@ namespace CompanyService.Test
         [Fact]
         public void GetCompanyRetrievesCompany()
         {
-            CompanyController controller = new CompanyController(new TestMemoryRepository());
+            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
 
             string testName = "Test Company";
             Guid id = Guid.NewGuid();
@@ -42,7 +42,7 @@ namespace CompanyService.Test
         [Fact]
         public void GetNonExistentCompanyReturnsNotFound()
         {
-            CompanyController controller = new CompanyController(new TestMemoryRepository());
+            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
 
             Guid id = Guid.NewGuid();
 
@@ -54,7 +54,7 @@ namespace CompanyService.Test
         [Fact]
         public void CreateCompanyAddsCompanyToList()
         {
-            CompanyController controller = new CompanyController(new TestMemoryRepository());
+            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
 
             var actionResultGetAll = controller.GetAllCompanies() as ObjectResult;
             List<Company> originalCompanies = new List<Company>((IEnumerable<Company>)actionResultGetAll.Value);
@@ -75,7 +75,7 @@ namespace CompanyService.Test
         [Fact]
         public void UpdateCompanyModifiesCompanyToList()
         {
-            CompanyController controller = new CompanyController(new TestMemoryRepository());
+            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
 
             var id = Guid.NewGuid();
             var c = new Company("test", id);
@@ -97,7 +97,7 @@ namespace CompanyService.Test
         [Fact]
         public void UpdateNonExistentTeamReturnsNotFound()
         {
-            CompanyController controller = new CompanyController(new TestMemoryRepository());
+            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
 
             var NonExistantId = Guid.NewGuid();
             var company = new Company("Should Not Exist", NonExistantId);
@@ -109,7 +109,7 @@ namespace CompanyService.Test
         [Fact]
         public void DeleteCompanyRemovesFromList()
         {
-            CompanyController controller = new CompanyController(new TestMemoryRepository());
+            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
 
             var deleteId = Guid.NewGuid();
             var deleteName = "Delete Me";
@@ -132,7 +132,7 @@ namespace CompanyService.Test
         [Fact]
         public void DeleteNonExistentCompanyReturnsNotFound()
         {
-            CompanyController controller = new CompanyController(new TestMemoryRepository());
+            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
 
             var nonExistentId = Guid.NewGuid();
 

@@ -14,7 +14,6 @@ namespace CompanyService.Models
         public DateTime DayOfBirth { get; set; }
         public string AboutSnippet { get; set; }
         public string OnlineStatus { get; set; }
-        public int CompanyId { get; set; }
         #endregion
 
         #region Constructors

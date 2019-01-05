@@ -11,11 +11,11 @@ using CompanyService.Persistence;
 namespace CompanyService.Controllers
 {
     [Route("api/[controller]")]
-    public class CompanyController : Controller
+    public class CompaniesController : Controller
     {
-        ICompanyRepository _repository;
+        readonly ICompanyRepository _repository;
 
-        public CompanyController(ICompanyRepository repository)
+        public CompaniesController(ICompanyRepository repository)
         {
             _repository = repository;
         }
@@ -31,7 +31,7 @@ namespace CompanyService.Controllers
         [HttpGet("{id}")]
         public virtual IActionResult GetCompany(Guid id)
         {
-            var company = _repository.Get(id);
+            Company company = _repository.Get(id);
 
             if (company is null) 
             {
@@ -53,15 +53,12 @@ namespace CompanyService.Controllers
         [HttpPut("{id}")]
         public virtual IActionResult UpdateCompany([FromBody]Company company, Guid id)
         {
-            var updatedCompany = _repository.Get(id);
+            company.Id = id;
 
-            if (updatedCompany is null)
+            if (_repository.Update(company) is null)
             {
                 return NotFound();
             }
-
-            _repository.Delete(id);
-            _repository.Add(company);
 
             return Ok(company);
         }
@@ -70,14 +67,12 @@ namespace CompanyService.Controllers
         [HttpDelete("{id}")]
         public virtual IActionResult DeleteCompany(Guid id)
         {
-            var updatedCompany = _repository.Get(id);
+            Company updatedCompany = _repository.Delete(id);
 
             if (updatedCompany is null)
             {
                 return NotFound();
             }
-
-            _repository.Delete(id);
 
             return Ok(updatedCompany);
         }

@@ -19,6 +19,12 @@ namespace CompanyService.Test
                 new Company("Test Company Two")
             };
 
+            var employee = new List<Employee>
+            {
+                new Employee("Bob", "Dillon", Guid.NewGuid()),
+                new Employee("Joe", "Smith", Guid.NewGuid()),
+            };
+
             return companies;
         }
     }

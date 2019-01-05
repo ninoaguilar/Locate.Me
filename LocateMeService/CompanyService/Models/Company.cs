@@ -34,11 +34,6 @@ namespace CompanyService.Models
         {
             return this.Name;
         }
-
-        public static explicit operator Company(ObjectResult v)
-        {
-            throw new NotImplementedException();
-        }
         #endregion
 
     }
