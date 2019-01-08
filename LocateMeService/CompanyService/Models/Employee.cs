@@ -13,7 +13,10 @@ namespace CompanyService.Models
         public string Picture { get; set; }
         public DateTime DayOfBirth { get; set; }
         public string AboutSnippet { get; set; }
-        public string OnlineStatus { get; set; }
+
+        public Guid CompanyId { get; set; }
+        public Company Company { get; set; }
+
         #endregion
 
         #region Constructors

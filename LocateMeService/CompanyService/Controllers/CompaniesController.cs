@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using CompanyService.Models;
-using CompanyService.Persistence;
+using CompanyService.Abstractions.Repository;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -13,68 +14,87 @@ namespace CompanyService.Controllers
     [Route("api/[controller]")]
     public class CompaniesController : Controller
     {
-        readonly ICompanyRepository _repository;
+        private readonly CompanyServiceContext _context;
 
-        public CompaniesController(ICompanyRepository repository)
+        public CompaniesController(CompanyServiceContext context)
         {
-            _repository = repository;
+            _context = context;
         }
 
         // GET: api/company
         [HttpGet]
-        public virtual IActionResult GetAllCompanies()
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        public async Task<IActionResult> GetAllCompaniesAsync()
         {
-            return Ok(_repository.ListAll());
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var companies = await _context.Companies.ToListAsync();
+
+            return companies == null ? NotFound() : (IActionResult)Ok(companies);
         }
 
         // GET api/company/5
         [HttpGet("{id}")]
-        public virtual IActionResult GetCompany(Guid id)
+        public virtual async Task<IActionResult> GetCompanyAsync(Guid id)
         {
-            Company company = _repository.Get(id);
-
-            if (company is null) 
-            {
-                return NotFound();
-            }
-
-            return Ok(company);
+            var company = await _context.Companies.SingleOrDefaultAsync(c => c.Id == id);
+                
+            return company == null ? NotFound() : (IActionResult)Ok(company);
         }
 
         // POST api/company
         [HttpPost]
-        public virtual IActionResult CreateCompany([FromBody]Company c)
+        public virtual async Task<IActionResult> CreateCompanyAsync([FromBody]Company c)
         {
-            var company = _repository.Add(c);
-            return Created($"/company/{c.Id}", c);
+            var company = await _context.AddAsync(c);
+
+            if (company == null)
+            {
+                return NotFound();
+            }
+
+            await _context.SaveChangesAsync();
+            return (IActionResult)Created($"/company/{c.Id}", c);
         }
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public virtual IActionResult UpdateCompany([FromBody]Company company, Guid id)
+        public virtual async Task<IActionResult> UpdateCompanyAsync([FromBody]Company c, Guid id)
         {
-            company.Id = id;
+            Company company = await _context.Companies.SingleOrDefaultAsync(u => u.Id == id);
 
-            if (_repository.Update(company) is null)
+            if (company == null)
             {
                 return NotFound();
             }
+
+            company.Address = c.Address ?? company.Address;
+            company.Name = c.Name ?? company.Name;
+            company.PhoneNumber = c.PhoneNumber ?? company.PhoneNumber;
+
+            await _context.SaveChangesAsync();
 
             return Ok(company);
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public virtual IActionResult DeleteCompany(Guid id)
+        public virtual async Task<IActionResult> DeleteCompanyAsync(Guid id)
         {
-            Company updatedCompany = _repository.Delete(id);
+            Company company = await _context.Companies.SingleOrDefaultAsync(u => u.Id == id);
 
-            if (updatedCompany is null)
+            if (company == null)
             {
                 return NotFound();
             }
 
-            return Ok(updatedCompany);
+            _context.Companies.Remove(company);
+            await _context.SaveChangesAsync();
+            return Ok(company);
         }
     }
 }

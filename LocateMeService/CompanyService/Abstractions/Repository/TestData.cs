@@ -1,29 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using CompanyService.Abstractions.Repository;
 using CompanyService.Models;
-using Microsoft.EntityFrameworkCore;
 
-namespace CompanyService.Test
+namespace CompanyService.Abstractions.Repository
 {
-    public class TestMemoryRepository
+    public class TestData
     {
-        public readonly CompanyServiceContext _context;
-
-        public TestMemoryRepository(string DbName)
+        public TestData()
         {
-            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
-                .UseInMemoryDatabase(databaseName: DbName)
-                .Options;
-
-            _context = new CompanyServiceContext(options);
-            AddTestData(_context);
         }
 
         internal static void AddTestData(CompanyServiceContext apiContext)
         {
-            Guid testCompany1Id = Guid.Parse("64ab7258-2669-46fa-b408-10635b1e67ae");
-            Guid testCompany2Id = Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249");
+            var testCompany1Id = Guid.NewGuid();
+            var testCompany2Id = Guid.NewGuid();
 
             var testCompany1 = new Company
             {
@@ -85,7 +74,6 @@ namespace CompanyService.Test
             apiContext.Employees.Add(testEmployee1);
             apiContext.Employees.Add(testEmployee2);
             apiContext.Employees.Add(testEmployee3);
-            apiContext.SaveChanges();
         }
     }
 }

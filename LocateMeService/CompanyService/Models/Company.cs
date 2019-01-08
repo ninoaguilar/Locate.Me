@@ -11,6 +11,7 @@ namespace CompanyService.Models
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
+
         public ICollection<Employee> Employees { get; set; }
         #endregion
 

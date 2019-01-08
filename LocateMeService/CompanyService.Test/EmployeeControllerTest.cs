@@ -5,138 +5,172 @@ using CompanyService.Models;
 using CompanyService.Controllers;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using CompanyService.Abstractions.Repository;
 
 namespace CompanyService.Test
 {
     public class EmployeeControllerTest
     {
         [Fact]
-        public void QueryCompanyListReturnsCorrectCompanies()
+        public async void Query_employee_list_returns_correct_employees_async()
         {
-            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
+            var testRepository = new TestMemoryRepository("Query_company_list_returns_correct_employees");
 
-            var actionResultGetAll = controller.GetEmployees() as ObjectResult;
-            var rawCompanies = (IEnumerable<Company>)actionResultGetAll.Value;
-            List<Company> companies = new List<Company>(rawCompanies);
-            Assert.Equal(2, companies.Count);
-            Assert.Equal("Test Company One", companies[0].Name);
-            Assert.Equal("Test Company Two", companies[1].Name);
+            EmployeesController controller = new EmployeesController(testRepository._context);
+
+            var result = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(Guid.Parse("64ab7258-2669-46fa-b408-10635b1e67ae")) as ObjectResult).Value;
+            var employees = new List<Employee>(result);
+            Assert.Equal(2, employees.Count);
+            Assert.Equal("Joeseph", employees[0].FirstName);
+            Assert.Equal("Bober", employees[1].FirstName);
         }
 
         [Fact]
-        public void GetCompanyRetrievesCompany()
+        public async void Get_employee_retrieves_company_async()
         {
-            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
+            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
+                .UseInMemoryDatabase(databaseName: "Get_company_retrieves_company_async")
+                .Options;
 
-            string testName = "Test Company";
+            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
+
+            string sampleFirstName = "Sample";
+            string sampleLastName = "Name";
             Guid id = Guid.NewGuid();
-            Company testCompany = new Company(testName, id);
+            Employee sampleEmployee = new Employee(sampleFirstName, sampleLastName, id);
 
-            controller.CreateCompany(testCompany);
-            var actionResultGetCompany = controller.GetCompany(testCompany.Id) as ObjectResult;
-            Company result = (Company)actionResultGetCompany.Value;
+            await controller.CreateEmployeeAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"),sampleEmployee);
 
-            Assert.Equal(result, testCompany);
+            var resultEmployee = (Employee)(await controller.GetEmployeeAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"),sampleEmployee.Id) as ObjectResult).Value;
+
+            Assert.Equal(resultEmployee, sampleEmployee);
         }
 
         [Fact]
-        public void GetNonExistentCompanyReturnsNotFound()
+        public async void Get_non_existent_employee_returns_not_found_async()
         {
-            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
+            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
+                .UseInMemoryDatabase(databaseName: "Get_non_existent_company_returns_not_foundAsync")
+                .Options;
+
+            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
 
             Guid id = Guid.NewGuid();
 
-            var result = controller.GetCompany(id);
-
-            Assert.True(result is NotFoundResult);
+            var resultEmployee = await controller.GetEmployeeAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"), id);
+            var test = resultEmployee;
+            Assert.True(resultEmployee is NotFoundResult);
         }
 
         [Fact]
-        public void CreateCompanyAddsCompanyToList()
+        public async void Create_employee_adds_company_to_list_async()
         {
-            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
+            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
+                .UseInMemoryDatabase(databaseName: "Create_company_adds_company_to_list_async")
+                .Options;
 
-            var actionResultGetAll = controller.GetAllCompanies() as ObjectResult;
-            List<Company> originalCompanies = new List<Company>((IEnumerable<Company>)actionResultGetAll.Value);
+            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
 
-            Company additionalCompany = new Company("sample");
-            var result = controller.CreateCompany(additionalCompany);
+            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249")) as ObjectResult).Value;
+            List<Employee> originalEmployees = new List<Employee>(resultEmployees);
+
+            Employee additionalEmployee = new Employee("sample", "employee", Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"));
+            var result = controller.CreateEmployeeAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"), additionalEmployee).Result;
             Assert.Equal(201, (result as ObjectResult).StatusCode);
 
-            var actionResultAdditional = controller.GetAllCompanies() as ObjectResult;
-            var CompaniesWithAdditional = new List<Company>((IEnumerable<Company>)(actionResultAdditional).Value);
+            var updatedResultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249")) as ObjectResult).Value;
+            var EmployeesWithAdditional = new List<Employee>(updatedResultEmployees);
 
-            Assert.Equal(CompaniesWithAdditional.Count, originalCompanies.Count + 1);
+            Assert.Equal(EmployeesWithAdditional.Count, originalEmployees.Count + 1);
 
-            var sampleCompany = CompaniesWithAdditional.FirstOrDefault(target => target.Name == "sample");
-            Assert.NotNull(sampleCompany);
+            var sampleEmployeeFirst = EmployeesWithAdditional.FirstOrDefault(target => target.FirstName == "sample");
+            var sampleEmployeeLast = EmployeesWithAdditional.FirstOrDefault(target => target.LastName == "employee");
+            Assert.NotNull(sampleEmployeeFirst);
+            Assert.NotNull(sampleEmployeeFirst);
         }
 
         [Fact]
-        public void UpdateCompanyModifiesCompanyToList()
+        public async void Update_employee_modifies_employee_to_list_async()
         {
-            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
+            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
+                .UseInMemoryDatabase(databaseName: "Update_company_modifies_company_to_list_async")
+                .Options;
+
+            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
 
             var id = Guid.NewGuid();
-            var c = new Company("test", id);
-            var result = controller.CreateCompany(c);
+            var c = new Employee("test", id);
+            var result = controller.CreateEmployeeAsync(c);
 
-            var updatedCompany = new Company("Update", id);
-            controller.UpdateCompany(updatedCompany, id);
+            var updatedEmployee = new Employee("Update", id);
+            await controller.UpdateEmployeeAsync(updatedEmployee, id);
 
-            var actionResultUpdatedGetAll = controller.GetAllCompanies() as ObjectResult;
-            var updatedCompanies = new List<Company>((IEnumerable<Company>)actionResultUpdatedGetAll.Value);
-            var testCompany = updatedCompanies.FirstOrDefault(target => target.Name == "test");
-            Assert.Null(testCompany);
+            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync() as ObjectResult).Value;
+            var updatedEmployees = new List<Employee>(resultEmployees);
 
-            var actionResultGetCompany = controller.GetCompany(id) as ObjectResult;
-            Company resultCompany = (Company)actionResultGetCompany.Value;
-            Assert.Equal(updatedCompany, resultCompany);
+            var testEmployee = updatedEmployees.FirstOrDefault(target => target.Name == "test");
+            Assert.Null(testEmployee);
+
+            var actionResultGetEmployee = (Employee)(await controller.GetEmployeeAsync(id) as ObjectResult).Value;
+            Employee resultEmployee = actionResultGetEmployee;
+            Assert.Equal(updatedEmployee.Name, resultEmployee.Name);
+            Assert.Equal(updatedEmployee.Id, resultEmployee.Id);
         }
 
         [Fact]
-        public void UpdateNonExistentTeamReturnsNotFound()
+        public async void Update_non_existent_employee_returns_not_found_async()
         {
-            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
+            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
+                .UseInMemoryDatabase(databaseName: "Update_non_existent_team_returns_not_foundAsync")
+                .Options;
+
+            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
 
             var NonExistantId = Guid.NewGuid();
-            var company = new Company("Should Not Exist", NonExistantId);
-            var result = controller.UpdateCompany(company, NonExistantId);
+            var company = new Employee("Should Not Exist", NonExistantId);
+            var result = await controller.UpdateEmployeeAsync(company, NonExistantId);
 
             Assert.True(result is NotFoundResult);
         }
 
         [Fact]
-        public void DeleteCompanyRemovesFromList()
+        public async void Delete_employee_removes_from_list_async()
         {
-            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
+            var testRepository = new TestMemoryRepository("Delete_company_removes_from_list_async");
+
+            EmployeesController controller = new EmployeesController(testRepository._context);
 
             var deleteId = Guid.NewGuid();
             var deleteName = "Delete Me";
-            var deleteCompany = new Company(deleteName, deleteId);
-            controller.CreateCompany(deleteCompany);
+            var deleteEmployee = new Employee(deleteName, deleteId);
+            await controller.CreateEmployeeAsync(deleteEmployee);
 
-            var actionResultOriginal = controller.GetAllCompanies() as ObjectResult;
-            var resultCompanies = new List<Company>((IEnumerable<Company>)actionResultOriginal.Value);
-            var resultCompany = resultCompanies.Find(target => target.Name == deleteName);
-            Assert.NotNull(resultCompany);
+            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync() as ObjectResult).Value;
+            var employeesOriginal = new List<Employee>(resultEmployees);
+            var resultEmployee = employeesOriginal.Find(target => target.Name == deleteName);
+            Assert.NotNull(resultEmployee);
 
-            controller.DeleteCompany(deleteId);
+            await controller.DeleteEmployeeAsync(deleteId);
 
-            var actionResultDeleted = controller.GetAllCompanies() as ObjectResult;
-            resultCompanies = new List<Company>((IEnumerable<Company>)actionResultDeleted.Value);
-            resultCompany = resultCompanies.Find(target => target.Name == deleteName);
-            Assert.Null(resultCompany);
+            var SingleDeletedResultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync() as ObjectResult).Value;
+            var employeesUpdated = new List<Employee>(SingleDeletedResultEmployees);
+            resultEmployee = employeesUpdated.Find(target => target.Name == deleteName);
+            Assert.Null(resultEmployee);
         }
 
         [Fact]
-        public void DeleteNonExistentCompanyReturnsNotFound()
+        public async void Delete_non_existent_employee_returns_not_found_async()
         {
-            EmployeesController controller = new EmployeesController(new TestMemoryRepository());
+            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
+                .UseInMemoryDatabase(databaseName: "Delete_non_existent_company_returns_not_foundAsync")
+                .Options;
+
+            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
 
             var nonExistentId = Guid.NewGuid();
 
-            var result = controller.DeleteCompany(nonExistentId);
+            var result = await controller.DeleteEmployeeAsync(nonExistentId);
             Assert.True(result is NotFoundResult);
         }
     }
