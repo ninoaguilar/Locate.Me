@@ -6,7 +6,7 @@ namespace CompanyService.Abstractions.Repository
 {
     public class CompanyServiceContext : DbContext
     {
-        public CompanyServiceContext(DbContextOptions<CompanyServiceContext> options) 
+        public CompanyServiceContext(DbContextOptions<CompanyServiceContext> options)
         : base(options)
         {
         }
@@ -17,6 +17,7 @@ namespace CompanyService.Abstractions.Repository
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.SeedData();
         }
 
         #region Entities

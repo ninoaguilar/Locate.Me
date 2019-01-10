@@ -36,8 +36,10 @@ namespace CompanyService.Test
             CompaniesController controller = new CompaniesController(new CompanyServiceContext(options));
 
             string sampleName = "Sample Company";
-            Guid id = Guid.NewGuid();
-            Company sampleCompany = new Company(sampleName, id);
+            Company sampleCompany = new Company
+            {
+                Name = sampleName
+            };
 
             await controller.CreateCompanyAsync(sampleCompany);
 
@@ -74,8 +76,11 @@ namespace CompanyService.Test
             var resultCompanies = (IEnumerable<Company>)(await controller.GetAllCompaniesAsync() as ObjectResult).Value;
             List<Company> originalCompanies = new List<Company>(resultCompanies);
 
-            Company additionalCompany = new Company("sample");
-            var result = controller.CreateCompanyAsync(additionalCompany).Result;
+            Company additionalCompany = new Company
+            {
+                Name = "sample"
+            };
+            var result = await controller.CreateCompanyAsync(additionalCompany);
             Assert.Equal(201, (result as ObjectResult).StatusCode);
 
             var updatedResultCompanies = (IEnumerable<Company>)(await controller.GetAllCompaniesAsync() as ObjectResult).Value;
@@ -96,12 +101,19 @@ namespace CompanyService.Test
 
             CompaniesController controller = new CompaniesController(new CompanyServiceContext(options));
 
-            var id = Guid.NewGuid();
-            var c = new Company("test", id);
-            var result = controller.CreateCompanyAsync(c);
+            var c = new Company
+            {
+                Name = "Orignal"
+            };
 
-            var updatedCompany = new Company("Update", id);
-            await controller.UpdateCompanyAsync(updatedCompany, id);
+            var result = (Company)(await controller.CreateCompanyAsync(c) as ObjectResult).Value;
+
+            var updatedCompany = new Company
+            {
+                Id = result.Id,
+                Name = "Updated"
+            };
+            await controller.UpdateCompanyAsync(updatedCompany, result.Id);
 
             var resultCompanies = (IEnumerable<Company>)(await controller.GetAllCompaniesAsync() as ObjectResult).Value;
             var updatedCompanies = new List<Company>(resultCompanies);
@@ -109,7 +121,7 @@ namespace CompanyService.Test
             var testCompany = updatedCompanies.FirstOrDefault(target => target.Name == "test");
             Assert.Null(testCompany);
 
-            var actionResultGetCompany = (Company)(await controller.GetCompanyAsync(id) as ObjectResult).Value;
+            var actionResultGetCompany = (Company)(await controller.GetCompanyAsync(result.Id) as ObjectResult).Value;
             Company resultCompany = actionResultGetCompany;
             Assert.Equal(updatedCompany.Name, resultCompany.Name);
             Assert.Equal(updatedCompany.Id, resultCompany.Id);
@@ -125,7 +137,11 @@ namespace CompanyService.Test
             CompaniesController controller = new CompaniesController(new CompanyServiceContext(options));
 
             var NonExistantId = Guid.NewGuid();
-            var company = new Company("Should Not Exist", NonExistantId);
+            var company = new Company
+            {
+                Id = NonExistantId,
+                Name = "Non Existant Company"
+            };
             var result = await controller.UpdateCompanyAsync(company, NonExistantId);
 
             Assert.True(result is NotFoundResult);
@@ -138,17 +154,22 @@ namespace CompanyService.Test
 
             CompaniesController controller = new CompaniesController(testRepository._context);
 
-            var deleteId = Guid.NewGuid();
             var deleteName = "Delete Me";
-            var deleteCompany = new Company(deleteName, deleteId);
-            await controller.CreateCompanyAsync(deleteCompany);
+            var deleteCompany = new Company 
+            {
+                Name = deleteName, 
+            };
 
-            var resultCompanies = (IEnumerable<Company>)(await controller.GetAllCompaniesAsync() as ObjectResult).Value;
-            var companiesOriginal = new List<Company>(resultCompanies);
+            var result = await controller.CreateCompanyAsync(deleteCompany) as ObjectResult;
+            Assert.Equal(201, result.StatusCode);
+            var resultId = ((Company)result.Value).Id;
+
+            var companies = (IEnumerable<Company>)(await controller.GetAllCompaniesAsync() as ObjectResult).Value;
+            var companiesOriginal = new List<Company>(companies);
             var resultCompany = companiesOriginal.Find(target => target.Name == deleteName);
             Assert.NotNull(resultCompany);
 
-            await controller.DeleteCompanyAsync(deleteId);
+            await controller.DeleteCompanyAsync(resultId);
 
             var SingleDeletedResultCompanies = (IEnumerable<Company>)(await controller.GetAllCompaniesAsync() as ObjectResult).Value;
             var companiesUpdated = new List<Company>(SingleDeletedResultCompanies);

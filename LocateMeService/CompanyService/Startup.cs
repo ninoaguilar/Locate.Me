@@ -42,7 +42,7 @@ namespace LocateMeApi
             using (var serviceScope = app.ApplicationServices.CreateScope())
             {
                 var context = serviceScope.ServiceProvider.GetService<CompanyServiceContext>();
-                TestData.AddTestData(context);
+                context.Database.EnsureCreated();
             }
 
             if (env.IsDevelopment())

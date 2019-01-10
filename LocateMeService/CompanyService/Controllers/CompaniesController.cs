@@ -21,7 +21,7 @@ namespace CompanyService.Controllers
             _context = context;
         }
 
-        // GET: api/company
+        // GET: api/companies
         [HttpGet]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
@@ -50,14 +50,9 @@ namespace CompanyService.Controllers
         [HttpPost]
         public virtual async Task<IActionResult> CreateCompanyAsync([FromBody]Company c)
         {
-            var company = await _context.AddAsync(c);
-
-            if (company == null)
-            {
-                return NotFound();
-            }
-
+            await _context.AddAsync(c);
             await _context.SaveChangesAsync();
+
             return (IActionResult)Created($"/company/{c.Id}", c);
         }
 
@@ -67,14 +62,11 @@ namespace CompanyService.Controllers
         {
             Company company = await _context.Companies.SingleOrDefaultAsync(u => u.Id == id);
 
-            if (company == null)
-            {
-                return NotFound();
-            }
-
-            company.Address = c.Address ?? company.Address;
-            company.Name = c.Name ?? company.Name;
-            company.PhoneNumber = c.PhoneNumber ?? company.PhoneNumber;
+            if (c.Id != id || company == null) { return NotFound(); }
+             
+            company.Address = c.Address;
+            company.Name = c.Name;
+            company.PhoneNumber = c.PhoneNumber;
 
             await _context.SaveChangesAsync();
 

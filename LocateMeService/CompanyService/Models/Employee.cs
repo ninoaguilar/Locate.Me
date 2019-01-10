@@ -1,10 +1,15 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CompanyService.Models
 {
     public class Employee
     {
         #region Properties
+        [Key]
+        [Required]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -14,7 +19,7 @@ namespace CompanyService.Models
         public DateTime DayOfBirth { get; set; }
         public string AboutSnippet { get; set; }
 
-        public Guid CompanyId { get; set; }
+public Guid CompanyId { get; set; }
         public Company Company { get; set; }
 
         #endregion
@@ -23,26 +28,14 @@ namespace CompanyService.Models
         public Employee()
         {
         }
-
-        public Employee(Guid id) 
-        : this()
-        {
-            this.Id = id;
-        }
-
-        public Employee(string firstName, string LastName, Guid id) 
-        : this(id)
-        {
-            this.FirstName = firstName;
-            this.LastName = LastName;
-        }
+        #endregion
 
         public override string ToString()
         {
             return this.FirstName + this.LastName;
         }
 
-        #endregion
+
 
     }
 }

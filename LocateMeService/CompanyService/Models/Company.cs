@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CompanyService.Models
@@ -7,6 +9,9 @@ namespace CompanyService.Models
     public class Company
     {
         #region Properties
+        [Key]
+        [Required]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
@@ -21,21 +26,13 @@ namespace CompanyService.Models
             this.Employees = new List<Employee>();
         }
 
-        public Company(string name) : this()
-        {
-            this.Name = name;
-        }
-
-        public Company(string name, Guid guid) : this(name)
-        {
-            this.Id = guid;
-        }
+        #endregion
 
         public override string ToString()
         {
             return this.Name;
         }
-        #endregion
+
 
     }
 }

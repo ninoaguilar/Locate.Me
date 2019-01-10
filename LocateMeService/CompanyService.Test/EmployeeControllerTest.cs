@@ -15,121 +15,140 @@ namespace CompanyService.Test
         [Fact]
         public async void Query_employee_list_returns_correct_employees_async()
         {
-            var testRepository = new TestMemoryRepository("Query_company_list_returns_correct_employees");
-
+            var testRepository = new TestMemoryRepository("Query_employee_list_returns_correct_employees_async");
             EmployeesController controller = new EmployeesController(testRepository._context);
 
-            var result = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(Guid.Parse("64ab7258-2669-46fa-b408-10635b1e67ae")) as ObjectResult).Value;
-            var employees = new List<Employee>(result);
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
+
+            var result = await controller.CreateEmployeeAsync(companyId, new Employee { FirstName = "Nino", LastName = "Aguilar" }) as ObjectResult;
+            Assert.Equal(201, (result).StatusCode);
+            result = await controller.CreateEmployeeAsync(companyId, new Employee { FirstName = "Test", LastName = "Employee" }) as ObjectResult;
+            Assert.Equal(201, (result).StatusCode);
+
+            var allEmployeeResult = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(companyId) as ObjectResult).Value;
+            var employees = new List<Employee>(allEmployeeResult);
             Assert.Equal(2, employees.Count);
-            Assert.Equal("Joeseph", employees[0].FirstName);
-            Assert.Equal("Bober", employees[1].FirstName);
+            Assert.Equal("Nino", employees[0].FirstName);
+            Assert.Equal("Aguilar", employees[0].LastName);
+            Assert.Equal("Test", employees[1].FirstName);
+            Assert.Equal("Employee", employees[1].LastName);
         }
 
         [Fact]
-        public async void Get_employee_retrieves_company_async()
+        public async void Get_employee_retrieves_employee_async()
         {
-            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
-                .UseInMemoryDatabase(databaseName: "Get_company_retrieves_company_async")
-                .Options;
+            var testRepository = new TestMemoryRepository("Get_employee_retrieves_employee_async");
+            EmployeesController controller = new EmployeesController(testRepository._context);
 
-            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
 
-            string sampleFirstName = "Sample";
-            string sampleLastName = "Name";
-            Guid id = Guid.NewGuid();
-            Employee sampleEmployee = new Employee(sampleFirstName, sampleLastName, id);
+            var sampleEmployee = new Employee { FirstName = "Sample", LastName = "Name" };
 
-            await controller.CreateEmployeeAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"),sampleEmployee);
+            var result = await controller.CreateEmployeeAsync(companyId, sampleEmployee) as ObjectResult;
+            Assert.Equal(201, result.StatusCode);
 
-            var resultEmployee = (Employee)(await controller.GetEmployeeAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"),sampleEmployee.Id) as ObjectResult).Value;
+            var recentlyCreatedEmployee = (Employee)result.Value;
+            var resultEmployee = (Employee)(await controller.GetEmployeeAsync(companyId, recentlyCreatedEmployee.Id) as ObjectResult).Value;
 
-            Assert.Equal(resultEmployee, sampleEmployee);
+            Assert.Equal(resultEmployee.FirstName, sampleEmployee.FirstName);
+            Assert.Equal(resultEmployee.LastName, sampleEmployee.LastName);
         }
 
         [Fact]
         public async void Get_non_existent_employee_returns_not_found_async()
         {
-            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
-                .UseInMemoryDatabase(databaseName: "Get_non_existent_company_returns_not_foundAsync")
-                .Options;
+            var testRepository = new TestMemoryRepository("Get_non_existent_employee_returns_not_found_async");
+            EmployeesController controller = new EmployeesController(testRepository._context);
 
-            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
 
             Guid id = Guid.NewGuid();
 
-            var resultEmployee = await controller.GetEmployeeAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"), id);
+            var resultEmployee = await controller.GetEmployeeAsync(companyId, id);
             var test = resultEmployee;
             Assert.True(resultEmployee is NotFoundResult);
         }
 
         [Fact]
-        public async void Create_employee_adds_company_to_list_async()
+        public async void Create_employee_adds_employee_to_company_list_async()
         {
-            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
-                .UseInMemoryDatabase(databaseName: "Create_company_adds_company_to_list_async")
-                .Options;
+            var testRepository = new TestMemoryRepository("Create_employee_adds_employee_to_company_list_async");
+            EmployeesController controller = new EmployeesController(testRepository._context);
 
-            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
 
-            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249")) as ObjectResult).Value;
-            List<Employee> originalEmployees = new List<Employee>(resultEmployees);
+            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(companyId) as ObjectResult).Value;
+            var originalEmployees = new List<Employee>(resultEmployees);
 
-            Employee additionalEmployee = new Employee("sample", "employee", Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"));
-            var result = controller.CreateEmployeeAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249"), additionalEmployee).Result;
-            Assert.Equal(201, (result as ObjectResult).StatusCode);
+            var result = await controller.CreateEmployeeAsync(companyId, new Employee { FirstName = "sample", LastName = "employee" }) as ObjectResult;
+            Assert.Equal(201, (result).StatusCode);
 
-            var updatedResultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(Guid.Parse("1da8b16b-7173-4ced-94c4-5669584d8249")) as ObjectResult).Value;
+            var updatedResultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(companyId) as ObjectResult).Value;
             var EmployeesWithAdditional = new List<Employee>(updatedResultEmployees);
 
             Assert.Equal(EmployeesWithAdditional.Count, originalEmployees.Count + 1);
 
             var sampleEmployeeFirst = EmployeesWithAdditional.FirstOrDefault(target => target.FirstName == "sample");
             var sampleEmployeeLast = EmployeesWithAdditional.FirstOrDefault(target => target.LastName == "employee");
+            var sampleEmployeeCompanyId = EmployeesWithAdditional.FirstOrDefault(target => target.CompanyId == companyId);
             Assert.NotNull(sampleEmployeeFirst);
             Assert.NotNull(sampleEmployeeFirst);
+            Assert.NotNull(sampleEmployeeCompanyId);
         }
 
         [Fact]
         public async void Update_employee_modifies_employee_to_list_async()
         {
-            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
-                .UseInMemoryDatabase(databaseName: "Update_company_modifies_company_to_list_async")
-                .Options;
+            var testRepository = new TestMemoryRepository("Update_employee_modifies_employee_to_list_async");
+            EmployeesController controller = new EmployeesController(testRepository._context);
 
-            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
 
-            var id = Guid.NewGuid();
-            var c = new Employee("test", id);
-            var result = controller.CreateEmployeeAsync(c);
+            var employee = new Employee
+            {
+                FirstName = "test",
+                LastName = "employee"
+            };
+            var result = await controller.CreateEmployeeAsync(companyId, employee) as ObjectResult;
+            Assert.Equal(201, (result).StatusCode);
+            var resultEmployee = (Employee)result.Value;
 
-            var updatedEmployee = new Employee("Update", id);
-            await controller.UpdateEmployeeAsync(updatedEmployee, id);
+            var updatedEmployee = new Employee
+            {
+                Id = resultEmployee.Id,
+                FirstName = "Update",
+                LastName = "employee"
+            };
+            await controller.UpdateEmployeeAsync(companyId, updatedEmployee);
 
-            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync() as ObjectResult).Value;
+            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(companyId) as ObjectResult).Value;
             var updatedEmployees = new List<Employee>(resultEmployees);
 
-            var testEmployee = updatedEmployees.FirstOrDefault(target => target.Name == "test");
-            Assert.Null(testEmployee);
+            var testEmployee = updatedEmployees.FirstOrDefault(target => target.FirstName == "Update");
+            Assert.NotNull(testEmployee);
 
-            var actionResultGetEmployee = (Employee)(await controller.GetEmployeeAsync(id) as ObjectResult).Value;
-            Employee resultEmployee = actionResultGetEmployee;
-            Assert.Equal(updatedEmployee.Name, resultEmployee.Name);
-            Assert.Equal(updatedEmployee.Id, resultEmployee.Id);
+            var actionResultGetEmployee = (Employee)(await controller.GetEmployeeAsync(companyId, testEmployee.Id) as ObjectResult).Value;
+            Employee resultEmployeeUpdated = actionResultGetEmployee;
+            Assert.Equal(updatedEmployee.FirstName, resultEmployeeUpdated.FirstName);
+            Assert.Equal(updatedEmployee.Id, resultEmployeeUpdated.Id);
         }
 
         [Fact]
         public async void Update_non_existent_employee_returns_not_found_async()
         {
-            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
-                .UseInMemoryDatabase(databaseName: "Update_non_existent_team_returns_not_foundAsync")
-                .Options;
+            var testRepository = new TestMemoryRepository("Update_non_existent_employee_returns_not_found_async");
+            EmployeesController controller = new EmployeesController(testRepository._context);
 
-            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
 
-            var NonExistantId = Guid.NewGuid();
-            var company = new Employee("Should Not Exist", NonExistantId);
-            var result = await controller.UpdateEmployeeAsync(company, NonExistantId);
+            var employee = new Employee
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Should Not",
+                LastName = "Exist"
+            };
+
+            var result = await controller.UpdateEmployeeAsync(companyId, employee);
 
             Assert.True(result is NotFoundResult);
         }
@@ -137,40 +156,46 @@ namespace CompanyService.Test
         [Fact]
         public async void Delete_employee_removes_from_list_async()
         {
-            var testRepository = new TestMemoryRepository("Delete_company_removes_from_list_async");
-
+            var testRepository = new TestMemoryRepository("Delete_employee_removes_from_list_async");
             EmployeesController controller = new EmployeesController(testRepository._context);
 
-            var deleteId = Guid.NewGuid();
-            var deleteName = "Delete Me";
-            var deleteEmployee = new Employee(deleteName, deleteId);
-            await controller.CreateEmployeeAsync(deleteEmployee);
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
 
-            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync() as ObjectResult).Value;
+            var deleteFirstName = "Delete";
+            var deleteLastName = "Me";
+            var deleteEmployee = new Employee
+            {
+                FirstName = deleteFirstName,
+                LastName = deleteLastName
+            };
+
+            var result = await controller.CreateEmployeeAsync(companyId, deleteEmployee) as ObjectResult;
+            Assert.Equal(201, (result).StatusCode);
+            var createdEmployee = (Employee)result.Value;
+
+            var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(companyId) as ObjectResult).Value;
             var employeesOriginal = new List<Employee>(resultEmployees);
-            var resultEmployee = employeesOriginal.Find(target => target.Name == deleteName);
+            var resultEmployee = employeesOriginal.Find(target => target.FirstName == deleteFirstName);
             Assert.NotNull(resultEmployee);
 
-            await controller.DeleteEmployeeAsync(deleteId);
+            await controller.DeleteEmployeeAsync(companyId, createdEmployee.Id);
 
-            var SingleDeletedResultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync() as ObjectResult).Value;
+            var SingleDeletedResultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(companyId) as ObjectResult).Value;
             var employeesUpdated = new List<Employee>(SingleDeletedResultEmployees);
-            resultEmployee = employeesUpdated.Find(target => target.Name == deleteName);
+            resultEmployee = employeesUpdated.Find(target => target.FirstName == deleteFirstName);
             Assert.Null(resultEmployee);
         }
 
         [Fact]
         public async void Delete_non_existent_employee_returns_not_found_async()
         {
-            var options = new DbContextOptionsBuilder<CompanyServiceContext>()
-                .UseInMemoryDatabase(databaseName: "Delete_non_existent_company_returns_not_foundAsync")
-                .Options;
+            var testRepository = new TestMemoryRepository("Delete_non_existent_employee_returns_not_found_async");
+            EmployeesController controller = new EmployeesController(testRepository._context);
 
-            EmployeesController controller = new EmployeesController(new CompanyServiceContext(options));
-
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
             var nonExistentId = Guid.NewGuid();
 
-            var result = await controller.DeleteEmployeeAsync(nonExistentId);
+            var result = await controller.DeleteEmployeeAsync(companyId, nonExistentId);
             Assert.True(result is NotFoundResult);
         }
     }
