@@ -1,0 +1,15 @@
+ul.employees {
+    height: 100vh;
+    overflow-x: scroll;
+    
+    li {
+    list-style-type: none;
+    padding: 20px 20px;
+    border-bottom: 1px solid #80746D;
+    }
+
+    ul.quizzes li.selected {
+        background-color: #597ea8;
+        color: white;
+    }
+  }
