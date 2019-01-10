@@ -1,0 +1,11 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: microsoft/dotnet:2.1-sdk
+    steps:
+      - checkout
+      - run: find .
+      - run: cd ./LocateMeService/CompanyService && dotnet restore
+      - run: cd ./LocateMeService/CompanyService && dotnet build
+      - run: cd ./LocateMeService/CompanyService.Test && dotnet test
