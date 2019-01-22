@@ -1,0 +1,40 @@
+<div class="content-area fill">
+  <h1>Employees</h1>
+  <button type="button" 
+          class="btn btn-icon btn-outline" 
+          (click)="openForm()">
+    <clr-icon shape="plus-circle"></clr-icon> Add
+  </button>
+
+  <h3 *ngIf="employees == null;else show_table">
+    No employees. Please add an employee.
+  </h3>
+
+  <ng-template #show_table>
+  <table #show_table class="table">
+    <thead>
+      <tr>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Edit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let employee of employees">
+        <td>{{employee.firstName}}</td>
+        <td>{{employee.LastName}}</td>
+        <td>
+          <button type="button" class="btn btn-icon">
+              <clr-icon shape="pencil"></clr-icon> Edit
+          </button>
+          <button type="button" class="btn btn-icon btn-warning">
+              <clr-icon shape="trash"></clr-icon> Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </ng-template>
+
+  <new-employee-form [isOpen]="isOpen" (isOpenChange)="closeForm($event)"></new-employee-form>
+</div>

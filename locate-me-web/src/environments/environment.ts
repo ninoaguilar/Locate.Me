@@ -6,7 +6,8 @@ import { keys } from './private.prod'
 
 export const environment = {
   production: false,
-  apiKey: keys.apiKey
+  apiKey: keys.apiKey,
+  apiUrl: "http://localhost:32768/api/"
 };
 
 /*

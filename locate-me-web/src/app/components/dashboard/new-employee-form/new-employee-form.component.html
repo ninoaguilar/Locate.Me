@@ -1,0 +1,21 @@
+<clr-modal [(clrModalOpen)]="isOpen">
+    <h3 class="modal-title">New Employee Information</h3>
+    <div class="modal-body">
+        <form clrForm [formGroup]="newEmployeeForm">
+            <clr-input-container>
+                <label>First Name</label>
+                <input clrInput type="text" formControlName="firstName"/>
+                <clr-control-error>First name is required</clr-control-error>
+            </clr-input-container>
+            <clr-input-container>
+                <label>Last Name</label>
+                <input clrInput type="text" formControlName="lastName"/>
+                <clr-control-error>Last name is required</clr-control-error>
+            </clr-input-container>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" type="submit" (click)="resetForm()">Reset</button>
+        <button type="button" class="btn btn-primary" type="button" (click)="submit()">Save</button>
+    </div>
+</clr-modal>

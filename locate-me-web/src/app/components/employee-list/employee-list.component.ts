@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from '../../services/api.service'
 
 @Component({
   selector: 'employee-list',
@@ -11,28 +11,14 @@ export class EmployeeListComponent implements OnInit {
   selectedEmployee: Employee;
   employees: Employee[];
 
-  constructor(/*http: HttpClient,
-    @Inject('BASE_URL)') baseUrl: string*/) {
+  constructor(
+    private apiService: ApiService
+  ) {
       this.title = "Employees";
-      
-      //var url = baseUrl + "api/companies/86c06754-d473-4e77-9350-d61ba8cf190b/employees"
-/*
-      http.get<Employee[]>(url).subscribe(result => {
-        this.employees = result;
-      }, error => console.error(error));
-      */
   }
 
   ngOnInit() {
-    this.employees = [
-      { "Id": "1-1", "FirstName": "Nino", "LastName": "Aguilar" },
-      { "Id": "1-2", "FirstName": "Nino", "LastName": "Aguilar" },
-      { "Id": "1-3", "FirstName": "Nino", "LastName": "Aguilar" },
-      { "Id": "1-4", "FirstName": "Nino", "LastName": "Aguilar" },
-      { "Id": "1-5", "FirstName": "Nino", "LastName": "Aguilar" },
-      { "Id": "1-6", "FirstName": "Nino", "LastName": "Aguilar" },
-      { "Id": "1-7", "FirstName": "Nino", "LastName": "Aguilar" },
-    ]
+    this.employees = this.apiService.getAllEmployees("86c06754-d473-4e77-9350-d61ba8cf190b");
   }
 
   onSelect(employee: Employee) {

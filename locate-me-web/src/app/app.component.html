@@ -8,8 +8,8 @@
     </div>
 
     <div class="header-nav">
-      <a class="active nav-link nav-text">Dashboard</a>
-      <a class="nav-link nav-text">Interactive Analytics</a>
+      <a routerLink="/dashboard" class="nav-link nav-text">Dashboard</a>
+      <a routerLink="/interactiveMap" class="nav-link nav-text">Interactive Map</a>
     </div>
 
     <div class="header-actions">
@@ -28,13 +28,7 @@
   </div>
 
   <div class="content-container">
-      <div class="sidenav">
-        <employee-list></employee-list>
-      </div>
-    <div class="content-area" style="padding: 0">
-      <map></map>
-    </div>
+    <router-outlet></router-outlet>
   </div>
-
+  
 </div>
-<router-outlet></router-outlet>
