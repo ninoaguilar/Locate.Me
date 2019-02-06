@@ -17,6 +17,7 @@ namespace CompanyService.Abstractions.Repository
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Company>().HasMany(u => u.Employees).WithOne(u => u.Company);
             modelBuilder.SeedData();
         }
 

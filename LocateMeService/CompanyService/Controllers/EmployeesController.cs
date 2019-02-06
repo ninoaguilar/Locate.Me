@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CompanyService.Controllers
 {
-    [Route("api/[controller]")]
+    //[Route("api/[controller]")]
     public class EmployeesController : Controller
     {
         private readonly CompanyServiceContext _context;
@@ -22,19 +22,20 @@ namespace CompanyService.Controllers
         }
 
         [HttpGet]
-        [Route("/companies/{companyId}/[controller]")]
+        [Route("api/companies/{companyId}/[controller]")]
         public async Task<IActionResult> GetAllEmployeesAsync(Guid companyId)
         {
-            var company = await _context.Companies.SingleOrDefaultAsync(c => c.Id == companyId);
+            var company = await _context.Companies.Include(u => u.Employees)
+                                                  .SingleOrDefaultAsync(c => c.Id == companyId);
 
             return company.Employees == null ? NotFound() : (IActionResult)Ok(company.Employees);
         }
 
         [HttpGet]
-        [Route("/companies/{companyId}/[controller]/{employeeId}")]
+        [Route("api/companies/{companyId}/[controller]/{employeeId}")]
         public async Task<IActionResult> GetEmployeeAsync(Guid companyId, Guid employeeId)
         {
-            var employee = await _context.Employees.Where(u => u.CompanyId == companyId && u.Id == employeeId)
+            var employee = await _context.Employees.Where(u => u.Company.Id == companyId && u.Id == employeeId)
                                                    .SingleOrDefaultAsync();
                 
             return employee == null ? NotFound() : (IActionResult)Ok(employee);
@@ -55,10 +56,10 @@ namespace CompanyService.Controllers
         */
 
         [HttpPost]
-        [Route("/companies/{companyId}/[controller]/{employeeId}")]
+        [Route("api/companies/{companyId}/[controller]")]
         public async Task<IActionResult> CreateEmployeeAsync(Guid companyId, [FromBody]Employee employee)
         {
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+            var company = await _context.Companies.FirstOrDefaultAsync(u => u.Id == companyId);
 
             if (company == null)
             {
@@ -70,15 +71,14 @@ namespace CompanyService.Controllers
             await _context.Employees.AddAsync(employee);
             await _context.SaveChangesAsync();
 
-
-            return (IActionResult)Created($"/companies/{companyId}/[controller]/{employee.Id}/", employee);
+            return (IActionResult)Created($"api/companies/{companyId}/employees/{employee.Id}/", employee);
         }
 
         [HttpPut]
-        [Route("/companies/{companyId}/[controller]/{employeeId}")]
+        [Route("api/companies/{companyId}/[controller]/{employeeId}")]
         public async Task<IActionResult> UpdateEmployeeAsync(Guid companyId, [FromBody]Employee employee)
         {
-            var updateEmployee = await _context.Employees.Where(u => u.CompanyId == companyId && u.Id == employee.Id)
+            var updateEmployee = await _context.Employees.Where(u => u.Company.Id == companyId && u.Id == employee.Id)
                                                               .SingleOrDefaultAsync();
 
             if (updateEmployee == null)
@@ -96,7 +96,7 @@ namespace CompanyService.Controllers
 
         // DELETE api/values/5
         [HttpDelete]
-        [Route("/companies/{companyId}/[controller]/{employeeId}")]
+        [Route("api/companies/{companyId}/[controller]/{employeeId}")]
         public async Task<IActionResult> DeleteEmployeeAsync(Guid companyId, Guid employeeId)
         {
             var _company = await _context.Companies.SingleOrDefaultAsync(c => c.Id == companyId);
