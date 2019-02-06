@@ -19,7 +19,6 @@ namespace CompanyService.Models
         public DateTime DayOfBirth { get; set; }
         public string AboutSnippet { get; set; }
 
-public Guid CompanyId { get; set; }
         public Company Company { get; set; }
 
         #endregion

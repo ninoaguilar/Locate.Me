@@ -35,6 +35,21 @@ namespace CompanyService.Test
         }
 
         [Fact]
+        public async void Query_employee_list_returns_empty_list_when_no_employees_async()
+        {
+            var testRepository = new TestMemoryRepository("Query_employee_list_returns_empty_list_when_no_employees_async");
+            EmployeesController controller = new EmployeesController(testRepository._context);
+
+            var companyId = Guid.Parse("86c06754-d473-4e77-9350-d61ba8cf190b");
+
+            var allEmployeeResult = await controller.GetAllEmployeesAsync(companyId) as ObjectResult;
+            Assert.Equal(200, (allEmployeeResult).StatusCode);
+            var employees = new List<Employee>((IEnumerable<Employee>)allEmployeeResult.Value);
+            Assert.Empty(employees);
+            Assert.NotNull(employees);
+        }
+
+        [Fact]
         public async void Get_employee_retrieves_employee_async()
         {
             var testRepository = new TestMemoryRepository("Get_employee_retrieves_employee_async");
@@ -90,7 +105,7 @@ namespace CompanyService.Test
 
             var sampleEmployeeFirst = EmployeesWithAdditional.FirstOrDefault(target => target.FirstName == "sample");
             var sampleEmployeeLast = EmployeesWithAdditional.FirstOrDefault(target => target.LastName == "employee");
-            var sampleEmployeeCompanyId = EmployeesWithAdditional.FirstOrDefault(target => target.CompanyId == companyId);
+            var sampleEmployeeCompanyId = EmployeesWithAdditional.FirstOrDefault(target => target.Company.Id == companyId);
             Assert.NotNull(sampleEmployeeFirst);
             Assert.NotNull(sampleEmployeeFirst);
             Assert.NotNull(sampleEmployeeCompanyId);
