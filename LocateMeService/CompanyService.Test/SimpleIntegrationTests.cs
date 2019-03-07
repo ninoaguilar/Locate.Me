@@ -17,21 +17,21 @@ namespace CompanyService.Test
         private readonly TestServer testServer;
         private readonly HttpClient testClient;
 
-        private readonly Company fooCompany;
-        private readonly Employee barEmployee;
+        private readonly Company sampleCompany;
+        private readonly Employee sampleEmployee;
 
         public SimpleIntegrationTests()
         {
             testServer = new TestServer(new WebHostBuilder().UseStartup<Startup>());
             testClient = testServer.CreateClient();
 
-            fooCompany = new Company()
+            sampleCompany = new Company()
             {
                 Id = Guid.NewGuid(),
                 Name = "Foo"
             };
 
-            barEmployee = new Employee()
+            sampleEmployee = new Employee()
             {
                 Id = Guid.NewGuid(),
                 FirstName = "Bar",
@@ -42,15 +42,12 @@ namespace CompanyService.Test
         [Fact]
         public async void Test_company_post_and_get()
         {
-            StringContent stringContent = new StringContent(
-                JsonConvert.SerializeObject(fooCompany),
-                Encoding.UTF8,
-                "application/json");
+            StringContent bodyContent = CreateBody(sampleCompany);
 
             HttpResponseMessage postResponse =
                 await testClient.PostAsync(
                     "api/companies",
-                    stringContent);
+                    bodyContent);
             postResponse.EnsureSuccessStatusCode();
 
             var getResponse = await testClient.GetAsync("api/companies");
@@ -59,37 +56,35 @@ namespace CompanyService.Test
             string raw = await getResponse.Content.ReadAsStringAsync();
             List<Company> companies =
                 JsonConvert.DeserializeObject<List<Company>>(raw);
+
             Assert.Equal(3, companies.Count());
             Assert.Equal("Foo", companies[2].Name);
-            Assert.Equal(fooCompany.Id, companies[2].Id);
+            Assert.Equal(sampleCompany.Id, companies[2].Id);
         }
 
         [Fact]
-        public async void Test_employee_post_and_get()
+        public async void Test_employee_delete()
         {
-            StringContent companyStringContent = new StringContent(
-                JsonConvert.SerializeObject(fooCompany),
-                Encoding.UTF8,
-                "application/json");
+            StringContent bodyContent = CreateBody(sampleCompany);
 
             HttpResponseMessage companyPostResponse =
                 await testClient.PostAsync(
                     "api/companies",
-                    companyStringContent);
+                    bodyContent);
             companyPostResponse.EnsureSuccessStatusCode();
 
             StringContent stringContent = new StringContent(
-                JsonConvert.SerializeObject(barEmployee),
+                JsonConvert.SerializeObject(sampleEmployee),
                 Encoding.UTF8,
                 "application/json");
 
             HttpResponseMessage postResponse =
                 await testClient.PostAsync(
-                    "api/companies/" + fooCompany.Id + "/employees",
+                    "api/companies/" + sampleCompany.Id + "/employees",
                     stringContent);
             postResponse.EnsureSuccessStatusCode();
 
-            var getResponse = await testClient.GetAsync("api/companies/" + fooCompany.Id + "/employees/");
+            var getResponse = await testClient.GetAsync("api/companies/" + sampleCompany.Id + "/employees/");
             getResponse.EnsureSuccessStatusCode();
 
             string raw = await getResponse.Content.ReadAsStringAsync();
@@ -98,7 +93,25 @@ namespace CompanyService.Test
             Assert.Single(employees);
             Assert.Equal("Bar", employees[0].FirstName);
             Assert.Equal("John", employees[0].LastName);
-            Assert.Equal(barEmployee.Id, employees[0].Id);
+            Assert.Equal(sampleEmployee.Id, employees[0].Id);
+
+            string deleteString = "api/companies/" + sampleCompany.Id + "/employees/" + sampleEmployee.Id;
+
+            HttpResponseMessage deleteResponse =
+                await testClient.DeleteAsync(
+                    deleteString);
+            getResponse.EnsureSuccessStatusCode();
+            raw = await deleteResponse.Content.ReadAsStringAsync();
+            Employee deletedEmployee = JsonConvert.DeserializeObject<Employee>(raw);
+            Assert.Equal(sampleEmployee.Id, deletedEmployee.Id);
+        }
+
+        public StringContent CreateBody(object obj)
+        {
+            return new StringContent(
+                JsonConvert.SerializeObject(obj),
+                Encoding.UTF8,
+                "application/json");
         }
     }
 }
