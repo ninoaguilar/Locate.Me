@@ -202,7 +202,7 @@ namespace CompanyService.Test
             Assert.Null(resultEmployee);
         }
 
-        /*[Fact]
+        [Fact]
         public async void Delete_non_existent_employee_returns_not_found_async()
         {
             var testRepository = new TestMemoryRepository("Delete_non_existent_employee_returns_not_found_async");
