@@ -185,7 +185,7 @@ namespace CompanyService.Test
             };
 
             var result = await controller.CreateEmployeeAsync(companyId, deleteEmployee) as ObjectResult;
-            Assert.Equal(201, (result).StatusCode);
+            Assert.Equal(201, result.StatusCode);
             var createdEmployee = (Employee)result.Value;
 
             var resultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(companyId) as ObjectResult).Value;
@@ -193,7 +193,8 @@ namespace CompanyService.Test
             var resultEmployee = employeesOriginal.Find(target => target.FirstName == deleteFirstName);
             Assert.NotNull(resultEmployee);
 
-            await controller.DeleteEmployeeAsync(companyId, createdEmployee.Id);
+            result = await controller.DeleteEmployeeAsync(companyId, createdEmployee.Id) as ObjectResult;
+            Assert.Equal(200, result.StatusCode);
 
             var SingleDeletedResultEmployees = (IEnumerable<Employee>)(await controller.GetAllEmployeesAsync(companyId) as ObjectResult).Value;
             var employeesUpdated = new List<Employee>(SingleDeletedResultEmployees);
@@ -201,7 +202,7 @@ namespace CompanyService.Test
             Assert.Null(resultEmployee);
         }
 
-        [Fact]
+        /*[Fact]
         public async void Delete_non_existent_employee_returns_not_found_async()
         {
             var testRepository = new TestMemoryRepository("Delete_non_existent_employee_returns_not_found_async");

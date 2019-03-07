@@ -59,7 +59,8 @@ namespace CompanyService.Controllers
         [Route("api/companies/{companyId}/[controller]")]
         public async Task<IActionResult> CreateEmployeeAsync(Guid companyId, [FromBody]Employee employee)
         {
-            var company = await _context.Companies.FirstOrDefaultAsync(u => u.Id == companyId);
+            var company = await _context.Companies.Include(u => u.Employees)
+                                                  .SingleOrDefaultAsync(c => c.Id == companyId);
 
             if (company == null)
             {
@@ -67,9 +68,8 @@ namespace CompanyService.Controllers
             }
 
             company.Employees.Add(employee);
-
-            await _context.Employees.AddAsync(employee);
             await _context.SaveChangesAsync();
+
 
             return (IActionResult)Created($"api/companies/{companyId}/employees/{employee.Id}/", employee);
         }
@@ -94,12 +94,12 @@ namespace CompanyService.Controllers
             return (IActionResult)Ok(updateEmployee);
         }
 
-        // DELETE api/values/5
         [HttpDelete]
         [Route("api/companies/{companyId}/[controller]/{employeeId}")]
         public async Task<IActionResult> DeleteEmployeeAsync(Guid companyId, Guid employeeId)
         {
-            var _company = await _context.Companies.SingleOrDefaultAsync(c => c.Id == companyId);
+            var _company = await _context.Companies.Include(u => u.Employees)
+                                                   .SingleOrDefaultAsync(c => c.Id == companyId);
 
             if (_company == null)
             {
